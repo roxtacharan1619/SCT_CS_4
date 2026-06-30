@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keyboard Activity Logger</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI, sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.container{
+    width:900px;
+    background:#1e293b;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 25px rgba(0,0,0,.4);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#334155;
+    padding:15px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.card h2{
+    color:#38bdf8;
+}
+
+textarea{
+    width:100%;
+    height:120px;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    resize:none;
+    outline:none;
+}
+
+.log-box{
+    margin-top:20px;
+    height:250px;
+    overflow-y:auto;
+    background:#0f172a;
+    border-radius:10px;
+    padding:10px;
+}
+
+.log-entry{
+    padding:6px;
+    margin:4px 0;
+    border-left:4px solid #38bdf8;
+    background:#1e293b;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+button{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.clear{
+    background:#ef4444;
+    color:white;
+}
+
+.download{
+    background:#22c55e;
+    color:white;
+}
+
+.note{
+    margin-top:15px;
+    font-size:14px;
+    color:#cbd5e1;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>⌨ Keyboard Activity Logger</h1>
+
+<div class="stats">
+    <div class="card">
+        <p>Total Keystrokes</p>
+        <h2 id="count">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Special Keys</p>
+        <h2 id="special">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Session Time</p>
+        <h2 id="timer">00:00</h2>
+    </div>
+</div>
+
+<textarea id="typingArea"
+placeholder="Type here to start logging your keyboard activity..."></textarea>
+
+<div class="buttons">
+    <button class="clear" onclick="clearLogs()">Clear Logs</button>
+    <button class="download" onclick="downloadLogs()">Download Logs</button>
+</div>
+
+<div class="log-box" id="logBox"></div>
+
+<p class="note">
+This application records only keys typed inside this text area.
+</p>
+
+</div>
+
+<script>
+
+let keystrokes = 0;
+let specialKeys = 0;
+let logs = [];
+
+const countEl = document.getElementById("count");
+const specialEl = document.getElementById("special");
+const logBox = document.getElementById("logBox");
+
+document.getElementById("typingArea")
+.addEventListener("keydown", function(e){
+
+    keystrokes++;
+    countEl.textContent = keystrokes;
+
+    const specialList = [
+        "Enter","Backspace","Shift",
+        "Control","Alt","Tab",
+        "Escape","Delete"
+    ];
+
+    if(specialList.includes(e.key)){
+        specialKeys++;
+        specialEl.textContent = specialKeys;
+    }
+
+    const time = new Date().toLocaleTimeString();
+
+    const message =
+        `[${time}] Key: ${e.key}`;
+
+    logs.push(message);
+
+    const div = document.createElement("div");
+    div.className = "log-entry";
+    div.textContent = message;
+
+    logBox.prepend(div);
+});
+
+function clearLogs(){
+    logs = [];
+    logBox.innerHTML = "";
+    keystrokes = 0;
+    specialKeys = 0;
+
+    countEl.textContent = "0";
+    specialEl.textContent = "0";
+}
+
+function downloadLogs(){
+
+    const blob = new Blob(
+        [logs.join("\n")],
+        {type:"text/plain"}
+    );
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "keyboard_logs.txt";
+    a.click();
+}
+
+let seconds = 0;
+
+setInterval(()=>{
+    seconds++;
+
+    const mins =
+    String(Math.floor(seconds/60))
+    .padStart(2,'0');
+
+    const secs =
+    String(seconds%60)
+    .padStart(2,'0');
+
+    document.getElementById("timer")
+    .textContent =
+    `${mins}:${secs}`;
+
+},1000);
+
+</script>
+
+</body>
+</html>
